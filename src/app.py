@@ -6,6 +6,7 @@ import json
 import datetime
 import argparse
 import logging
+from contextlib import ExitStack
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -28,12 +29,14 @@ with open(args.targetfile, "r") as config_file:
 
 message_queue = queue.Queue()
 
+with ExitStack() as stack:
 
-db = DB_Connector(config_data["DB_connection_string"])
-with db:
-    db.process_in_thread()
+    for i in range(0, config_data['DB_writer_count']):
+        db = DB_Connector(config_data["DB_connection_string"])
+        stack.enter_context(db)
+        db.process_in_thread()
 
     receiver = Async_EventHub_Connector(config_data["EH_connection_string"])
-with receiver:
-    receiver.receive_messages()
+    with receiver:
+        receiver.receive_messages()
 
