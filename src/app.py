@@ -1,10 +1,10 @@
 from db_connector import DB_Connector
 from messaging import Async_EventHub_Connector
+import queue
 import yaml
 import json
 import datetime
 import argparse
-import queue
 import logging
 
 logger = logging.getLogger()
@@ -28,12 +28,12 @@ with open(args.targetfile, "r") as config_file:
 
 message_queue = queue.Queue()
 
-receiver = Async_EventHub_Connector(config_data["EH_connection_string"], message_queue)
+
+db = DB_Connector(config_data["DB_connection_string"])
+with db:
+    db.process_in_thread()
+
+    receiver = Async_EventHub_Connector(config_data["EH_connection_string"])
 with receiver:
     receiver.receive_messages()
-
-# db = DB_Connector(config_data["DB_connection_string"])
-# with db:
-#     # db.insert("testing", data_to_insert)
-#     db.process_queue(message_queue)
 

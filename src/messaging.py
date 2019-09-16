@@ -2,7 +2,7 @@ from azure.eventhub.aio import EventHubClient
 from azure.eventhub.aio.eventprocessor import (
     EventProcessor,
     PartitionProcessor,
-    SamplePartitionManager
+    SamplePartitionManager,
 )
 import logging
 import json
@@ -12,9 +12,11 @@ import datetime
 
 
 class Async_EventHub_Connector:
-    def __init__(self, connection_string, queue: queue.Queue):
+    def __init__(self, connection_string):
+        import app
+
         self._connection_string = connection_string
-        self._queue = queue
+        self._queue = app.message_queue
 
     def __enter__(self):
         # self._event_loop = asyncio.get_event_loop()
@@ -35,10 +37,9 @@ class Async_EventHub_Connector:
         loop.run_until_complete(self.aexit())
         loop.close()
 
-
     async def _receiver_loop(self):
         # write messages to event hub
-        
+
         await self._event_processor.start()
         # while True and not self._close:
         #     pass
@@ -55,16 +56,18 @@ class Async_EventHub_Connector:
 
 
 class MyPartitionProcessor(PartitionProcessor):
-    # def __init__(self, queue):
-    #     self._queue = queue
+    async def initialize(self, partition_context):
+        import app
+
+        self._queue = app.message_queue
+
     async def process_events(self, events, partition_context):
         if events:
             await asyncio.gather(*[self._process_event(event) for event in events])
             await partition_context.update_checkpoint(
                 events[-1].offset, events[-1].sequence_number
             )
-    async def _process_event(self, event):
-        now = datetime.datetime.utcnow().isoformat()
-        print(f"{now} ::: {event.body_as_json()}")
-        # self._queue.put(event)
 
+    async def _process_event(self, event):
+        print(f"Getting: {event.sequence_number} enqueued at {event.enqueued_time}")
+        self._queue.put(event.body_as_json())
