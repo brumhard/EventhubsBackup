@@ -28,9 +28,9 @@ with open(args.targetfile, "r") as config_file:
 
 message_queue = queue.Queue()
 
-receiver = Async_EventHub_Connector(config_data["EH_connection_string"])
+receiver = Async_EventHub_Connector(config_data["EH_connection_string"], message_queue)
 with receiver:
-    receiver.receive_messages(message_queue)
+    receiver.receive_messages()
 
 # db = DB_Connector(config_data["DB_connection_string"])
 # with db:
