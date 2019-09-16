@@ -41,16 +41,15 @@ class DB_Connector:
             if not self._queue.empty():
                 message = self._queue.get()
                 print(f"Processing: {message}")
-                print(f"queue: {self._queue.qsize()}")
-                data_to_insert = [
-                    {
-                        "time": datetime.datetime.fromisoformat(message["TimeStamp"]),
-                        "time_needed": message["TimeTaken"],
-                        "status_code": message["Status"],
-                        "target": message["Target"],
-                    }
-                ]
-                self.insert("monitoring", data_to_insert)
+                # data_to_insert = [
+                #     {
+                #         "time": datetime.datetime.fromisoformat(message["TimeStamp"]),
+                #         "time_needed": message["TimeTaken"],
+                #         "status_code": message["Status"],
+                #         "target": message["Target"],
+                #     }
+                # ]
+                self.insert("test", [message])
 
     def process_in_thread(self):
         thread = threading.Thread(target=self._process_queue)
