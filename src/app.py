@@ -1,8 +1,14 @@
 from db_connector import DB_Connector
+from messaging import Async_EventHub_Connector
 import yaml
 import json
 import datetime
 import argparse
+import queue
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # arguments for script
 parser = argparse.ArgumentParser(
@@ -20,17 +26,14 @@ args = parser.parse_args()
 with open(args.targetfile, "r") as config_file:
     config_data = yaml.safe_load(config_file)
 
+message_queue = queue.Queue()
 
-data_to_insert = [
-    {
-        "time": datetime.datetime.now(),
-        "deviceid": 7,
-        "status_code": 400,
-        "response": json.dumps({"testing": "lul"}),
-    }
-]
+receiver = Async_EventHub_Connector(config_data["EH_connection_string"])
+with receiver:
+    receiver.receive_messages(message_queue)
 
-db = DB_Connector(config_data["DB_connection_string"])
-with db:
-    db.insert("testing", data_to_insert)
+# db = DB_Connector(config_data["DB_connection_string"])
+# with db:
+#     # db.insert("testing", data_to_insert)
+#     db.process_queue(message_queue)
 
