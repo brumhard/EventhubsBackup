@@ -27,10 +27,11 @@ args = parser.parse_args()
 with open(args.targetfile, "r") as config_file:
     config_data = yaml.safe_load(config_file)
 
+# open queue for exchange of messages between threads
 message_queue = queue.Queue()
 
+# use ExitStack to close all db connections in the end
 with ExitStack() as stack:
-
     for i in range(0, config_data["DB_writer_count"]):
         db = DB_Connector(config_data["DB_connection_string"])
         stack.enter_context(db)

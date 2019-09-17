@@ -26,7 +26,7 @@ class DB_Connector:
         for key_set in keys_sets[1:]:
             if key_set != keys_sets[0]:
                 raise ValueError("Every dict in list should have same keys")
-
+        
         column_names = ", ".join(keys_sets[0])
         values_placeholder = ("%s, " * len(keys_sets[0])).rstrip(", ")
         values_to_insert = list(map(lambda x: list(x.values()), data_to_insert))
@@ -40,15 +40,7 @@ class DB_Connector:
         while True:
             if not self._queue.empty():
                 message = self._queue.get()
-                print(f"Processing: {message}")
-                # data_to_insert = [
-                #     {
-                #         "time": datetime.datetime.fromisoformat(message["TimeStamp"]),
-                #         "time_needed": message["TimeTaken"],
-                #         "status_code": message["Status"],
-                #         "target": message["Target"],
-                #     }
-                # ]
+                # insert message in database table as is
                 self.insert("test", [message])
 
     def process_in_thread(self):
