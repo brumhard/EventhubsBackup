@@ -5,11 +5,10 @@ import threading
 
 
 class DB_Connector:
-    """Connects to PostgreSQL database to insert messages
+    """Connects to PostgreSQL database to insert messages from queue
 
     First connects to TimescaleDB to insert messages from the queue.
-    This happens in a thread and the class is only supposed to be 
-    used with process_in_thread method.
+    This happens in multiple threads.
     """
 
     def __init__(self, connection_string: str):
@@ -19,19 +18,57 @@ class DB_Connector:
 
         Args:
             connection_string: connection_string for database in format:
-            "dbname=... user=... password=... host=... port=..."
+                "dbname=... user=... password=... host=... port=..."
+
         """
 
         import app
 
         self._queue = app.message_queue
-        self.connection_string = connection_string
+        self._connection_string = connection_string
+        
 
     def __enter__(self):
-        self._conn = psycopg2.connect(self.connection_string)
-        self._cur = self._conn.cursor()
+        self._db_controller = DB_Controller(self._connection_string)
 
     def __exit__(self, type, value, traceback):
+        self._db_controller.close()
+
+    
+    def _process_queue(self):
+        """Handle the message queue
+
+        Permanently queries the message_queue for new messages from event hub.
+        Every new message gets inserted into DB.
+        """
+
+        while True:
+            if not self._queue.empty():
+                message = self._queue.get()
+                # insert message in database table as is
+                self._db_controller.insert("test", [message])
+
+    def process_in_thread(self):
+        thread = threading.Thread(target=self._process_queue)
+        thread.daemon = True
+        thread.start()
+
+    
+class DB_Controller:
+    def __init__(self, connection_string):
+        """Init the DB_controller class
+
+        Used as interface for PostgreSQL DBs to insert rows and handle connection.
+
+        Args:
+            connection_string: connection_string for database in format:
+                "dbname=... user=... password=... host=... port=..."
+        """
+        self.connection_string = connection_string
+        self._conn = psycopg2.connect(self.connection_string)
+        self._cur = self._conn.cursor()
+    
+    def close(self):
         if self._conn:
             self._cur.close()
             self._conn.close()
@@ -67,20 +104,3 @@ class DB_Connector:
         self._cur.executemany(sql_insert, values_to_insert)
         self._conn.commit()
 
-    def _process_queue(self):
-        """Handle the message queue
-
-        Permanently queries the message_queue for new messages from event hub.
-        Every new message gets inserted into DB.
-        """
-
-        while True:
-            if not self._queue.empty():
-                message = self._queue.get()
-                # insert message in database table as is
-                self.insert("test", [message])
-
-    def process_in_thread(self):
-        thread = threading.Thread(target=self._process_queue)
-        thread.daemon = True
-        thread.start()
