@@ -31,12 +31,16 @@ message_queue = queue.Queue()
 
 with ExitStack() as stack:
 
-    for i in range(0, config_data['DB_writer_count']):
+    for i in range(0, config_data["DB_writer_count"]):
         db = DB_Connector(config_data["DB_connection_string"])
         stack.enter_context(db)
         db.process_in_thread()
 
-    receiver = Async_EventHub_Connector(config_data["EH_connection_string"])
+    receiver = Async_EventHub_Connector(
+        config_data["EH_connection_string"],
+        config_data["SA_connection_string"],
+        config_data["SA_container_name"],
+    )
     with receiver:
         receiver.receive_messages()
 
