@@ -1,3 +1,9 @@
+"""App to write messages from event hub to TimescaleDB
+
+Pls see Readme.md for help on usage.
+"""
+
+
 from db_connector import DB_Connector
 from messaging import Async_EventHub_Connector
 import queue
