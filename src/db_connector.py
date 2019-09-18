@@ -11,7 +11,7 @@ class DB_Connector:
     This happens in multiple threads.
     """
 
-    def __init__(self, connection_string: str):
+    def __init__(self, connection_string: str, table_name: str):
         """Init the DB_connector class
 
         Uses global app.message_queue as queue.
@@ -19,14 +19,16 @@ class DB_Connector:
         Args:
             connection_string: connection_string for database in format:
                 "dbname=... user=... password=... host=... port=..."
+            table_name: name of the db table to write the data to
 
         """
 
+        # import app to get global message_queue, not possible on top because of circular import
         import app
 
         self._queue = app.message_queue
         self._connection_string = connection_string
-        
+        self._table_name = table_name
 
     def __enter__(self):
         self._db_controller = DB_Controller(self._connection_string)
@@ -46,7 +48,7 @@ class DB_Connector:
             if not self._queue.empty():
                 message = self._queue.get()
                 # insert message in database table as is
-                self._db_controller.insert("test", [message])
+                self._db_controller.insert(self._table_name, [message])
 
     def process_in_thread(self):
         thread = threading.Thread(target=self._process_queue)

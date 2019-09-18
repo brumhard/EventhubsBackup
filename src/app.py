@@ -25,7 +25,7 @@ parser.add_argument(
     "-t",
     "--targetfile",
     help="Path to the config file.",
-    default="C:\\Users\\brumhardadm\\Desktop\\tmp\\eh_reader_config.yaml",  # , required=True
+    default="C:\\Users\\brumhardadm\\Desktop\\tmp\\eh_reader_config.yml",  # , required=True
 )
 args = parser.parse_args()
 
@@ -39,7 +39,7 @@ message_queue = queue.Queue()
 # use ExitStack to close all db connections in the end
 with ExitStack() as stack:
     for i in range(0, config_data["DB_writer_count"]):
-        db = DB_Connector(config_data["DB_connection_string"])
+        db = DB_Connector(config_data["DB_connection_string"], config_data["DB_table_name"])
         stack.enter_context(db)
         db.process_in_thread()
 
