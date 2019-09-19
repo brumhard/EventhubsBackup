@@ -101,4 +101,4 @@ class MyPartitionProcessor(PartitionProcessor):
 
     async def _process_event(self, event):
         # only write message to queue
-        self._queue.put(event.body_as_json())
+        self._queue.put(event.body_as_str())

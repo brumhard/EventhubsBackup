@@ -39,7 +39,11 @@ message_queue = queue.Queue()
 # use ExitStack to close all db connections in the end
 with ExitStack() as stack:
     for i in range(0, config_data["DB_writer_count"]):
-        db = DB_Connector(config_data["DB_connection_string"], config_data["DB_table_name"])
+        db = DB_Connector(
+            config_data["DB_connection_string"],
+            config_data["DB_table_name"],
+            config_data["Plugin_name"],
+        )
         stack.enter_context(db)
         db.process_in_thread()
 
