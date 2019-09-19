@@ -1,5 +1,6 @@
 
 from pygrok import Grok
+import json
 # from .parser_plugin import Parser_Plugin
 
 
@@ -14,7 +15,7 @@ class IIS_Parser():
             "outbound_data": parsed_data['sc_bytes'],
             "inbound_data": parsed_data['cs_bytes'],
             "time_taken": parsed_data['time_taken'],
-            "raw_data": parsed_data
+            "raw_data": json.dumps(parsed_data)
         }
         return dict_for_db
 
