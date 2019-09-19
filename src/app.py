@@ -4,8 +4,8 @@ Pls see Readme.md for help on usage.
 """
 
 
-from db_connector import DB_Connector
-from messaging import Async_EventHub_Connector
+from event_processing import Event_Processing
+from messaging import EventHub_Receiver
 import queue
 import yaml
 import json
@@ -39,7 +39,7 @@ message_queue = queue.Queue()
 # use ExitStack to close all db connections in the end
 with ExitStack() as stack:
     for i in range(0, config_data["DB_writer_count"]):
-        db = DB_Connector(
+        db = Event_Processing(
             config_data["DB_connection_string"],
             config_data["DB_table_name"],
             config_data["Plugin_name"],
@@ -47,7 +47,7 @@ with ExitStack() as stack:
         stack.enter_context(db)
         db.process_in_thread()
 
-    receiver = Async_EventHub_Connector(
+    receiver = EventHub_Receiver(
         config_data["EH_connection_string"],
         config_data["SA_connection_string"],
         config_data["SA_container_name"],

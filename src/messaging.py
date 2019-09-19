@@ -13,7 +13,7 @@ import queue
 import datetime
 
 
-class Async_EventHub_Connector:
+class EventHub_Receiver:
     """ Connects to Azure Event Hub to receive messages.
 
     Uses the EventProcessor from Azure SDK to connect to Event Hub 
