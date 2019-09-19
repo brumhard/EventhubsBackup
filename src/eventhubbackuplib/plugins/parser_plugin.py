@@ -17,7 +17,6 @@ class Parser_Plugin(ABC):
         Args:
             data_to_process: data that should be processed in the format
                 that is written to Event Hub.
-
         """
         pass
 

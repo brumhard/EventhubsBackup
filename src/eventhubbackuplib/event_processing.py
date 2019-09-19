@@ -1,6 +1,9 @@
 from .db_controller import DB_Controller
 from .plugins.plugin_loader import Plugin_Loader
 import threading
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Event_Processing:
@@ -30,6 +33,8 @@ class Event_Processing:
         self._table_name = table_name
         self._plugin_name = plugin_name
 
+        logger.debug(f"{self.__hash__()}: Created processing client")
+
     def __enter__(self):
         self._db_controller = DB_Controller(self._connection_string)
         self._plugin = Plugin_Loader.load(class_name=self._plugin_name)
@@ -52,6 +57,7 @@ class Event_Processing:
                 self._db_controller.insert(self._table_name, [data])
 
     def process_in_thread(self) -> None:
+        logger.debug(f"{self.__hash__()}: Starting event processing in thread")
         thread = threading.Thread(target=self._process_queue)
         thread.daemon = True
         thread.start()

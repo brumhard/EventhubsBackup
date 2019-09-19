@@ -46,6 +46,5 @@ class EventHubBackup:
                 self._sa_container_name,
             )
             with receiver:
-                logger.info("Start receiving messages")
                 receiver.receive_messages()
 

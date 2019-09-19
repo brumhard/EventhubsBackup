@@ -12,6 +12,8 @@ import asyncio
 import queue
 import datetime
 
+logger = logging.getLogger(__name__)
+
 
 class EventHub_Receiver:
     """ Connects to Azure Event Hub to receive messages.
@@ -22,7 +24,12 @@ class EventHub_Receiver:
     which messages have been processed already.
     """
 
-    def __init__(self, eh_connection_string: str, sa_connection_string: str, sa_container_name: str):
+    def __init__(
+        self,
+        eh_connection_string: str,
+        sa_connection_string: str,
+        sa_container_name: str,
+    ):
         """Init the Async_EventHub_Connector class
 
         Args:
@@ -40,6 +47,8 @@ class EventHub_Receiver:
         self._sa_connection_string = sa_connection_string
         self._sa_container_name = sa_container_name
         self._queue = message_queue
+
+        logger.debug(f"{self.__hash__()}: Created EventHub_Receiver")
 
     def __enter__(self):
         self._client = EventHubClient.from_connection_string(self._eh_connection_string)
@@ -73,6 +82,7 @@ class EventHub_Receiver:
         Starts the Event Processor to get messages from event hub
         and process them using MyPartitionProcessor.
         """
+        logger.info("Starting async receiving messages")
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self._receiver_loop())
 
@@ -86,6 +96,7 @@ class MyPartitionProcessor(PartitionProcessor):
 
     async def initialize(self, partition_context):
         """Init function used by event processor instead of __init__()"""
+        logger.debug(f"{self.__hash__()}: New PartitionProcessor created")
         from .EventHubBackup import message_queue
 
         self._queue = message_queue
@@ -103,4 +114,7 @@ class MyPartitionProcessor(PartitionProcessor):
 
     async def _process_event(self, event):
         # only write message to queue
+        logger.debug(
+            f"{self.__hash__()}: Putting event with sn {event.sequence_number} and offset {event.offset} to queue"
+        )
         self._queue.put(event.body_as_str())
