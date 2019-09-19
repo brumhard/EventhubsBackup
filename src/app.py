@@ -7,9 +7,9 @@ import yaml
 import argparse
 import logging
 from contextlib import ExitStack
-from eventHubBackup.EventHubBackup import EventHubBackup
+from eventhubbackuplib.EventHubBackup import EventHubBackup
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('eventhubbackuplib')
 logger.setLevel(logging.DEBUG)
 
 eh_logger = logging.getLogger('azure.eventhub')

@@ -6,6 +6,8 @@ from contextlib import ExitStack
 
 message_queue = queue.Queue()
 
+logger = logging.getLogger(__name__)
+
 class EventHubBackup:
     def __init__(
         self,
@@ -27,6 +29,7 @@ class EventHubBackup:
 
     def start(self):
         # use ExitStack to close all db connections in the end
+        logger.info("Started backup")
         with ExitStack() as stack:
             for i in range(0, self._db_writer_count):
                 db = Event_Processing(
