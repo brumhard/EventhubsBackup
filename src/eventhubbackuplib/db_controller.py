@@ -45,7 +45,7 @@ class DB_Controller:
         Raises:
             ValueError: If data_to_insert contains dicts with different keys.
         """
-        logger.info(f"{self.__hash__()}: Inserting {len(data_to_insert)} new row/-s into table {table_name}")
+        logger.debug(f"{self.__hash__()}: Inserting {len(data_to_insert)} new row/-s into table {table_name}")
         logger.debug(f"{self.__hash__()}: Inserting into table {table_name}: {data_to_insert}")
 
         # make sure every entry in data_to_insert has same keys

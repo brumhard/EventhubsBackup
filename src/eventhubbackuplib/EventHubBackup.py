@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class EventHubBackup:
     def __init__(
         self,
-        db_writer_count: int,
+        db_worker_threads: int,
         db_connection_string: str,
         db_table_name: str,
         plugin_name: str,
@@ -21,7 +21,7 @@ class EventHubBackup:
         sa_connection_string: str,
         sa_container_name: str,
     ):
-        self._db_writer_count = db_writer_count
+        self._db_worker_threads = db_worker_threads
         self._db_connection_string = db_connection_string
         self._db_table_name = db_table_name
         self._plugin_name = plugin_name
@@ -33,9 +33,12 @@ class EventHubBackup:
         # use ExitStack to close all db connections in the end
         logger.info("Started backup")
         with ExitStack() as stack:
-            logger.info(f"Starting event processing in {self._db_writer_count} threads")
+            logger.info(f"Starting event processing in {self._db_worker_threads} threads")
             processor = Event_Processing(
-                self._db_connection_string, self._db_table_name, self._plugin_name
+                self._db_connection_string,
+                self._db_table_name,
+                self._plugin_name,
+                self._db_worker_threads,
             )
             stack.enter_context(processor)
 
@@ -46,7 +49,7 @@ class EventHubBackup:
                 self._eh_connection_string,
                 self._sa_connection_string,
                 self._sa_container_name,
-                wrapper.get_partition_processor()
+                wrapper.get_partition_processor(),
             )
             with receiver:
                 receiver.receive_messages()

@@ -38,12 +38,12 @@ class MyPartitionProcessor(PartitionProcessor):
         if events:
             logger.info(f"{self.__hash__()}: Processing {len(events)} events")
             loop = asyncio.get_event_loop()
-            executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+            executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=self._event_processing.number_of_threads
+            )
             blocking = [
                 loop.run_in_executor(
-                    executor,
-                    self._event_processing.process_event,
-                    event,
+                    executor, self._event_processing.process_event, event
                 )
                 for event in events
             ]
@@ -51,6 +51,7 @@ class MyPartitionProcessor(PartitionProcessor):
             await partition_context.update_checkpoint(
                 events[-1].offset, events[-1].sequence_number
             )
+
 
 class PartitionProcessorWrapper:
     def __init__(self):

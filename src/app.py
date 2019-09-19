@@ -42,7 +42,7 @@ with open(args.targetfile, "r") as config_file:
     config_data = yaml.safe_load(config_file)
 
 eh_backup = EventHubBackup(
-    db_writer_count=config_data["DB_writer_count"],
+    db_worker_threads=config_data["DB_worker_threads"],
     db_connection_string=config_data["DB_connection_string"],
     db_table_name=config_data["DB_table_name"],
     plugin_name=config_data["Plugin_name"],
