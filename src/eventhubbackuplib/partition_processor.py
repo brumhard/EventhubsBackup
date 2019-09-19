@@ -2,10 +2,12 @@ import logging
 import asyncio
 from azure.eventhub.aio.eventprocessor import PartitionProcessor
 from .event_processing import Event_Processing
+import concurrent.futures
 
 logger = logging.getLogger(__name__)
 
 event_processing = None
+
 
 class MyPartitionProcessor(PartitionProcessor):
     """Implementation of abstract class PartitionProcessor
@@ -34,22 +36,26 @@ class MyPartitionProcessor(PartitionProcessor):
         Writes all events to queue defined globally in EventHubBackup.message_queue.
         """
         if events:
-            await asyncio.gather(*[self._process_event(event) for event in events])
+            logger.info(f"{self.__hash__()}: Processing {len(events)} events")
+            loop = asyncio.get_event_loop()
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+            blocking = [
+                loop.run_in_executor(
+                    executor,
+                    self._event_processing.process_event,
+                    event,
+                )
+                for event in events
+            ]
+            await asyncio.wait(blocking)
             await partition_context.update_checkpoint(
                 events[-1].offset, events[-1].sequence_number
             )
 
-    async def _process_event(self, event):
-        logger.debug(
-            f"{self.__hash__()}: Processing event with sn {event.sequence_number} and offset {event.offset}"
-        )
-        self._event_processing.process_message(event.body_as_str())
-
-
 class PartitionProcessorWrapper:
     def __init__(self):
         self._processor_type = MyPartitionProcessor
-    
+
     def set_event_processing(self, event_processing_unit):
         global event_processing
         event_processing = event_processing_unit

@@ -43,3 +43,9 @@ class Event_Processing:
     def process_message(self, message) -> None:
         data = self._plugin.process(message)
         self._db_controller.insert(self._table_name, [data])
+    
+    def process_event(self, event) -> None:
+        logger.debug(
+            f"{self.__hash__()}: Processing event with sn {event.sequence_number} and offset {event.offset}"
+        )
+        self.process_message(event.body_as_str())
