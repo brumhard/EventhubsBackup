@@ -37,7 +37,7 @@ class Event_Processing:
     def __exit__(self, type, value, traceback):
         self._db_controller.close()
 
-    def _process_queue(self):
+    def _process_queue(self) -> None:
         """Handle the message queue
 
         Permanently queries the message_queue for new messages from event hub.
@@ -51,7 +51,7 @@ class Event_Processing:
                 data = self._plugin.process(message)
                 self._db_controller.insert(self._table_name, [data])
 
-    def process_in_thread(self):
+    def process_in_thread(self) -> None:
         thread = threading.Thread(target=self._process_queue)
         thread.daemon = True
         thread.start()

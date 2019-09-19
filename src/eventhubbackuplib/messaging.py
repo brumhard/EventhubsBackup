@@ -22,7 +22,7 @@ class EventHub_Receiver:
     which messages have been processed already.
     """
 
-    def __init__(self, eh_connection_string, sa_connection_string, sa_container_name):
+    def __init__(self, eh_connection_string: str, sa_connection_string: str, sa_container_name: str):
         """Init the Async_EventHub_Connector class
 
         Args:
@@ -62,12 +62,12 @@ class EventHub_Receiver:
         loop.run_until_complete(self.aexit())
         loop.close()
 
-    async def _receiver_loop(self):
+    async def _receiver_loop(self) -> None:
         # write messages to event hub, start is active as long as it runs
         async with self._storage_client:
             await self._event_processor.start()
 
-    def receive_messages(self):
+    def receive_messages(self) -> None:
         """Start listening to event hub
 
         Starts the Event Processor to get messages from event hub

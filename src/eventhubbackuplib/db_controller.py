@@ -4,11 +4,13 @@ import json
 import threading
 import logging
 
-logger = logging.getLogger("app")
+from typing import List, Dict, Union, Any
+
+logger = logging.getLogger(__name__)
 
 
 class DB_Controller:
-    def __init__(self, connection_string):
+    def __init__(self, connection_string: str):
         """Init the DB_controller class
 
         Used as interface for PostgreSQL DBs to insert rows and handle connection.
@@ -21,14 +23,12 @@ class DB_Controller:
         self._conn = psycopg2.connect(self.connection_string)
         self._cur = self._conn.cursor()
 
-        logger.info("testing")
-
-    def close(self):
+    def close(self) -> None:
         if self._conn:
             self._cur.close()
             self._conn.close()
 
-    def insert(self, table_name: str, data_to_insert: list):
+    def insert(self, table_name: str, data_to_insert: List[Dict[str, Any]]) -> None:
         """ Insert into table
 
         Uses keys from a the data_to_insert dict as column names
@@ -43,11 +43,14 @@ class DB_Controller:
         Raises:
             ValueError: If data_to_insert contains dicts with different keys.
         """
+        logger.info(f"Inserting new data into table {table_name}")
+        logger.debug(f"Inserting into table {table_name}: {data_to_insert}")
 
         # make sure every entry in data_to_insert has same keys
         keys_sets = list(map(lambda x: list(x.keys()), data_to_insert))
         for key_set in keys_sets[1:]:
             if key_set != keys_sets[0]:
+                logger.debug("List containing data to insert has different keys in the dicts")
                 raise ValueError("Every dict in list should have same keys")
 
         column_names = ", ".join(keys_sets[0])

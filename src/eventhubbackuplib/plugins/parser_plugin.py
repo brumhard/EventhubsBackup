@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Dict, Any
 
 
 class Parser_Plugin(ABC):
@@ -6,7 +7,7 @@ class Parser_Plugin(ABC):
         super().__init__()
 
     @abstractmethod
-    def process(self, data_to_process) -> dict:
+    def process(self, data_to_process) -> Dict[str, Any]:
         """Process input string to dict
 
         This method is used to parse the input from different data sources.

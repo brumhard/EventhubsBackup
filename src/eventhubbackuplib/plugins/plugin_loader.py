@@ -1,10 +1,11 @@
 import importlib
 from pathlib import Path
-
+from typing import Optional
+from .parser_plugin import Parser_Plugin
 
 class Plugin_Loader:
     @staticmethod
-    def load(class_name, path=None):
+    def load(class_name: str, path: Optional[str] = None) -> Parser_Plugin:
         if path == None:
             current_path = Path(__file__).parent
             abs_file_path = Path(current_path).joinpath(f"{class_name}.py")
