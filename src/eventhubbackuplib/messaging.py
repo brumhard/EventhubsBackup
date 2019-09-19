@@ -29,6 +29,7 @@ class EventHub_Receiver:
         eh_connection_string: str,
         sa_connection_string: str,
         sa_container_name: str,
+        partition_processor,
     ):
         """Init the Async_EventHub_Connector class
 
@@ -40,13 +41,10 @@ class EventHub_Receiver:
             sa_container_name: name of container in blob storage to be used for checkpoints               
         """
 
-        # import app to get global message_queue, not possible on top because of circular import
-        from .EventHubBackup import message_queue
-
         self._eh_connection_string = eh_connection_string
         self._sa_connection_string = sa_connection_string
         self._sa_container_name = sa_container_name
-        self._queue = message_queue
+        self._partition_processor = partition_processor
 
         logger.debug(f"{self.__hash__()}: Created EventHub_Receiver")
 
@@ -57,7 +55,7 @@ class EventHub_Receiver:
         )
         self._partition_manager = BlobPartitionManager(self._storage_client)
         self._event_processor = EventProcessor(
-            self._client, "$default", MyPartitionProcessor, self._partition_manager
+            self._client, "$default", self._partition_processor, self._partition_manager
         )
 
     async def aexit(self):
@@ -86,35 +84,3 @@ class EventHub_Receiver:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self._receiver_loop())
 
-
-class MyPartitionProcessor(PartitionProcessor):
-    """Implementation of abstract class PartitionProcessor
-    
-    Used by EventProcessor to handle the events.
-    Used for load balancing (new instance created when needed)
-    """
-
-    async def initialize(self, partition_context):
-        """Init function used by event processor instead of __init__()"""
-        logger.debug(f"{self.__hash__()}: New PartitionProcessor created")
-        from .EventHubBackup import message_queue
-
-        self._queue = message_queue
-
-    async def process_events(self, events, partition_context):
-        """Process event hub events
-
-        Writes all events to queue defined globally in EventHubBackup.message_queue.
-        """
-        if events:
-            await asyncio.gather(*[self._process_event(event) for event in events])
-            await partition_context.update_checkpoint(
-                events[-1].offset, events[-1].sequence_number
-            )
-
-    async def _process_event(self, event):
-        # only write message to queue
-        logger.debug(
-            f"{self.__hash__()}: Putting event with sn {event.sequence_number} and offset {event.offset} to queue"
-        )
-        self._queue.put(event.body_as_str())

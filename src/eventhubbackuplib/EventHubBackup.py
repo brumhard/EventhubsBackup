@@ -3,6 +3,7 @@ from .messaging import EventHub_Receiver
 import queue
 import logging
 from contextlib import ExitStack
+from .partition_processor import PartitionProcessorWrapper
 
 message_queue = queue.Queue()
 
@@ -33,17 +34,19 @@ class EventHubBackup:
         logger.info("Started backup")
         with ExitStack() as stack:
             logger.info(f"Starting event processing in {self._db_writer_count} threads")
-            for i in range(0, self._db_writer_count):
-                db = Event_Processing(
-                    self._db_connection_string, self._db_table_name, self._plugin_name
-                )
-                stack.enter_context(db)
-                db.process_in_thread()
+            processor = Event_Processing(
+                self._db_connection_string, self._db_table_name, self._plugin_name
+            )
+            stack.enter_context(processor)
+
+            wrapper = PartitionProcessorWrapper()
+            wrapper.set_event_processing(processor)
 
             receiver = EventHub_Receiver(
                 self._eh_connection_string,
                 self._sa_connection_string,
                 self._sa_container_name,
+                wrapper.get_partition_processor()
             )
             with receiver:
                 receiver.receive_messages()
