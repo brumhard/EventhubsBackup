@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 
+
 class Parser_Plugin(ABC):
     def __init__(self):
         super().__init__()
-    
+
     @abstractmethod
-    def process(self, data_to_process)-> dict:
+    def process(self, data_to_process) -> dict:
         """Process input string to dict
 
         This method is used to parse the input from different data sources.

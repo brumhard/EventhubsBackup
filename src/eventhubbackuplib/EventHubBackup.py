@@ -8,6 +8,7 @@ message_queue = queue.Queue()
 
 logger = logging.getLogger(__name__)
 
+
 class EventHubBackup:
     def __init__(
         self,

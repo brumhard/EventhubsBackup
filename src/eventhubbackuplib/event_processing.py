@@ -2,6 +2,7 @@ from .db_controller import DB_Controller
 from .plugins.plugin_loader import Plugin_Loader
 import threading
 
+
 class Event_Processing:
     """Connects to PostgreSQL database to insert messages from queue
 
@@ -36,7 +37,6 @@ class Event_Processing:
     def __exit__(self, type, value, traceback):
         self._db_controller.close()
 
-    
     def _process_queue(self):
         """Handle the message queue
 

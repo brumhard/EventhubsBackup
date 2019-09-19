@@ -12,6 +12,7 @@ import asyncio
 import queue
 import datetime
 
+
 class EventHub_Receiver:
     """ Connects to Azure Event Hub to receive messages.
 
@@ -75,6 +76,7 @@ class EventHub_Receiver:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self._receiver_loop())
 
+
 class MyPartitionProcessor(PartitionProcessor):
     """Implementation of abstract class PartitionProcessor
     
@@ -85,6 +87,7 @@ class MyPartitionProcessor(PartitionProcessor):
     async def initialize(self, partition_context):
         """Init function used by event processor instead of __init__()"""
         from .EventHubBackup import message_queue
+
         self._queue = message_queue
 
     async def process_events(self, events, partition_context):

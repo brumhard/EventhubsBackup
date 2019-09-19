@@ -5,7 +5,8 @@ import threading
 import logging
 
 logger = logging.getLogger("app")
- 
+
+
 class DB_Controller:
     def __init__(self, connection_string):
         """Init the DB_controller class
@@ -21,7 +22,7 @@ class DB_Controller:
         self._cur = self._conn.cursor()
 
         logger.info("testing")
-    
+
     def close(self):
         if self._conn:
             self._cur.close()

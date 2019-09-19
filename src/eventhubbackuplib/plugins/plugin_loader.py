@@ -4,7 +4,7 @@ from pathlib import Path
 
 class Plugin_Loader:
     @staticmethod
-    def load(class_name, path = None):
+    def load(class_name, path=None):
         if path == None:
             current_path = Path(__file__).parent
             abs_file_path = Path(current_path).joinpath(f"{class_name}.py")
@@ -21,8 +21,3 @@ class Plugin_Loader:
             )
         return instance
 
-
-
-
-
-# return method
