@@ -12,7 +12,6 @@ import asyncio
 import queue
 import datetime
 
-
 class EventHub_Receiver:
     """ Connects to Azure Event Hub to receive messages.
 
@@ -34,12 +33,12 @@ class EventHub_Receiver:
         """
 
         # import app to get global message_queue, not possible on top because of circular import
-        import app
+        from .EventHubBackup import message_queue
 
         self._eh_connection_string = eh_connection_string
         self._sa_connection_string = sa_connection_string
         self._sa_container_name = sa_container_name
-        self._queue = app.message_queue
+        self._queue = message_queue
 
     def __enter__(self):
         self._client = EventHubClient.from_connection_string(self._eh_connection_string)
@@ -85,13 +84,13 @@ class MyPartitionProcessor(PartitionProcessor):
 
     async def initialize(self, partition_context):
         """Init function used by event processor instead of __init__()"""
-        import app
-        self._queue = app.message_queue
+        from .EventHubBackup import message_queue
+        self._queue = message_queue
 
     async def process_events(self, events, partition_context):
         """Process event hub events
 
-        Writes all events to queue defined globally in app.message_queue.
+        Writes all events to queue defined globally in EventHubBackup.message_queue.
         """
         if events:
             await asyncio.gather(*[self._process_event(event) for event in events])

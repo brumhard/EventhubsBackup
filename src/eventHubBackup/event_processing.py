@@ -1,5 +1,5 @@
-from db_controller import DB_Controller
-from plugins.plugin_loader import Plugin_Loader
+from .db_controller import DB_Controller
+from .plugins.plugin_loader import Plugin_Loader
 import threading
 
 class Event_Processing:
@@ -12,7 +12,7 @@ class Event_Processing:
     def __init__(self, connection_string: str, table_name: str, plugin_name: str):
         """Init the DB_connector class
 
-        Uses global app.message_queue as queue.
+        Uses global EventHubBackup.message_queue as queue.
 
         Args:
             connection_string: connection_string for database in format:
@@ -21,10 +21,10 @@ class Event_Processing:
 
         """
 
-        # import app to get global message_queue, not possible on top because of circular import
-        import app
+        # import EventHubBackup to get global message_queue, not possible on top because of circular import
+        from .EventHubBackup import message_queue
 
-        self._queue = app.message_queue
+        self._queue = message_queue
         self._connection_string = connection_string
         self._table_name = table_name
         self._plugin_name = plugin_name

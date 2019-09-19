@@ -2,6 +2,9 @@ import psycopg2
 import datetime
 import json
 import threading
+import logging
+
+logger = logging.getLogger("app")
  
 class DB_Controller:
     def __init__(self, connection_string):
@@ -16,6 +19,8 @@ class DB_Controller:
         self.connection_string = connection_string
         self._conn = psycopg2.connect(self.connection_string)
         self._cur = self._conn.cursor()
+
+        logger.info("testing")
     
     def close(self):
         if self._conn:

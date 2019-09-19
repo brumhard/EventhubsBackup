@@ -3,19 +3,27 @@
 Pls see Readme.md for help on usage.
 """
 
-
-from event_processing import Event_Processing
-from messaging import EventHub_Receiver
-import queue
 import yaml
-import json
-import datetime
 import argparse
 import logging
 from contextlib import ExitStack
+from eventHubBackup.EventHubBackup import EventHubBackup
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+eh_logger = logging.getLogger('azure.eventhub')
+eh_logger.setLevel(logging.DEBUG)
+
+log_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+handler.setFormatter(log_format)
+logger.addHandler(handler)
+eh_logger.addHandler(handler)
+
+logger.info(__name__)
 
 # arguments for script
 parser = argparse.ArgumentParser(
@@ -33,25 +41,14 @@ args = parser.parse_args()
 with open(args.targetfile, "r") as config_file:
     config_data = yaml.safe_load(config_file)
 
-# open queue for exchange of messages between threads
-message_queue = queue.Queue()
+eh_backup = EventHubBackup(
+    db_writer_count= config_data['DB_writer_count'],
+    db_connection_string=config_data['DB_connection_string'],
+    db_table_name=config_data['DB_table_name'],
+    plugin_name=config_data['Plugin_name'],
+    eh_connection_string=config_data['EH_connection_string'],
+    sa_connection_string=config_data['SA_connection_string'],
+    sa_container_name=config_data['SA_container_name']
+)
 
-# use ExitStack to close all db connections in the end
-with ExitStack() as stack:
-    for i in range(0, config_data["DB_writer_count"]):
-        db = Event_Processing(
-            config_data["DB_connection_string"],
-            config_data["DB_table_name"],
-            config_data["Plugin_name"],
-        )
-        stack.enter_context(db)
-        db.process_in_thread()
-
-    receiver = EventHub_Receiver(
-        config_data["EH_connection_string"],
-        config_data["SA_connection_string"],
-        config_data["SA_container_name"],
-    )
-    with receiver:
-        receiver.receive_messages()
-
+eh_backup.start()
