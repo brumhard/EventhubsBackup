@@ -63,7 +63,17 @@ class DB_Controller:
         sql_insert = (
             f"INSERT INTO {table_name} ({column_names}) values ({values_placeholder})"
         )
-        self._cur.executemany(sql_insert, values_to_insert)
+        try:
+            self._cur.executemany(sql_insert, values_to_insert)
+        except psycopg2.errors.UndefinedTable as e:
+            original_error_message = str(e).split('\n')[0]
+            raise ValueError(f"The specified table ({table_name}) doesn't exit, originally: {original_error_message}")
+        except psycopg2.errors.UndefinedColumn as e:
+            original_error_message = str(e).split('\n')[0]
+            raise ValueError(f"One of the specified columns ({column_names}) doesn't exist in table ({table_name}), originally: {original_error_message}")
+        except psycopg2.errors.InFailedSqlTransaction:
+            logger.debug("Failed action because of earlier error")
+
 
     def commit(self):
         logger.info("Commited changes to db")

@@ -57,8 +57,8 @@ class MyPartitionProcessor(PartitionProcessor):
             if not error_queue.empty():
                 while not error_queue.empty():
                     # only first event of queue is important as others
-                    err = error_queue.get()
-                    logger.error(f"{self.__hash__()}: Error occured in thread: {err}")
+                    event, err = error_queue.get()
+                    logger.error(f"{self.__hash__()}: Error occured in event with sn {event.sequence_number}: {err}")
                 self._event_processing.db_controller.rollback()
                 raise Exception(f"{self.__hash__()}: 1 or more critical errors in processing")
             else:

@@ -59,9 +59,6 @@ class Event_Processing:
         )
         try:
             self.process_message(event.body_as_str())
-        except psycopg2.errors.InFailedSqlTransaction:
-            logger.debug("Failed processing event because of earlier error")
             
         except Exception as e:
-            logger.exception(e)
-            error_queue.put(e)
+            error_queue.put([event, e])
