@@ -1,9 +1,9 @@
 from .db_controller import DB_Controller
 from .plugins.plugin_loader import Plugin_Loader
+from azure.eventhub import EventData
 import threading
 import logging
 import queue 
-import psycopg2.errors
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +13,10 @@ class Event_Processing:
 
     First connects to TimescaleDB to insert messages from the queue.
     This happens in multiple threads.
+
+    Attributes:
+        number_of_threads: Number of threads with which the partition processor
+            using this class should work on the events.
     """
 
     def __init__(
@@ -30,6 +34,10 @@ class Event_Processing:
             connection_string: connection_string for database in format:
                 "dbname=... user=... password=... host=... port=..."
             table_name: name of the db table to write the data to
+            plugin_name: name of the parser_plugin to process the data with
+                (filename and classname have to be the same by default)
+            number_of_threads: Number of threads with which the partition processor
+                using this class should work on the events.
 
         """
 
@@ -49,11 +57,21 @@ class Event_Processing:
     def __exit__(self, type, value, traceback):
         self.db_controller.close()
 
-    def process_message(self, message) -> None:
+    def process_message(self, message: str) -> None:
+        "Process a message with the set plugin"
         data = self._plugin.process(message)
         self.db_controller.insert(self._table_name, [data])
 
-    def process_event(self, event, error_queue: queue.Queue) -> None:
+    def process_event(self, event: EventData, error_queue: queue.Queue) -> None:
+        """Process an event from event hub
+
+        Uses process_message to process the event body.
+        If an error occors it will be put into the queue.
+
+        Args:
+            event: Event to be processed.
+            error_queue: queue for occuring errors to be handled by calling process
+        """
         logger.debug(
             f"{self.__hash__()}: Processing event with sn {event.sequence_number} and offset {event.offset}"
         )

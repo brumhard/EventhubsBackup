@@ -10,14 +10,19 @@ logger = logging.getLogger(__name__)
 
 
 class DB_Controller:
+    """Wrapper class for psycopg2 to simplify DB transactions
+
+    Arguments:
+        connection_string: connection_string for database in format:
+            "dbname=... user=... password=... host=... port=..."
+    """
     def __init__(self, connection_string: str):
         """Init the DB_controller class
 
         Used as interface for PostgreSQL DBs to insert rows and handle connection.
 
         Args:
-            connection_string: connection_string for database in format:
-                "dbname=... user=... password=... host=... port=..."
+            connection_string: 
         """
         self.connection_string = connection_string
         self._conn = psycopg2.connect(self.connection_string)
@@ -76,10 +81,12 @@ class DB_Controller:
 
 
     def commit(self):
+        """Save changes done to the DB (e.g. insertions)"""
         logger.info("Commited changes to db")
         self._conn.commit()
     
     def rollback(self):
+        """Revert changes done to the DB (e.g. insertions)"""
         logger.info("Rollback on DB. Probably some error happened")
         self._conn.rollback()
 

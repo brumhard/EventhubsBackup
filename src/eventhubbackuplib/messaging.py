@@ -38,7 +38,9 @@ class EventHub_Receiver:
                 `"Endpoint=...;SharedAccessKeyName=...;SharedAccessKey=...;EntityPath=..."`
             sa_connection_string: connection string for storage blob storage
                 https://docs.microsoft.com/en-us/azure/storage/common/storage-account-manage#view-account-keys-and-connection-string
-            sa_container_name: name of container in blob storage to be used for checkpoints               
+            sa_container_name: name of container in blob storage to be used for checkpoint
+            partition_processor: partition_processor class to use for the event processor.
+                Must not be an instance but only the class name.        
         """
 
         self._eh_connection_string = eh_connection_string
