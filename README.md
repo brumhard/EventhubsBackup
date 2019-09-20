@@ -4,14 +4,21 @@
 
 ### Prerequisites
 
+> The whole code is documented by docstrings and inline comments. Refer to these to get a deep understanding.
+
 - Python 3 (docker?)
 - Azure Event Hubs namespace and hub
 - [Azure Block Blob storage account](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-create-account-block-blob) with container
-- Running TimescaleDB ([Setup](https://docs.timescale.com/latest/getting-started/installation)/ See below)
+- Running TimescaleDB ([Setup](https://docs.timescale.com/latest/getting-started/installation)/ See below) with table that support the plugins output.
+- Parser plugin for the messages in that eventhub available in the plugin folder
+
+> Foreach event hub, you need one seperate storage container to save checkpoints.
 
 ### Config file
 
 #### Location
+
+> Currently the below isn't implemented, change in `app.py`
 
 The following locations are checked in order
 
@@ -47,48 +54,20 @@ SA_connection_string:
 
 - [Get connection string from portal](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-manage#view-account-keys-and-connection-string)
 
----
+### Usage
 
-## TimescaleDB
+1. Create config file (see above)
 
-### General
+2. run `pip install -r requirements.txt`
 
-- Extension on top of PostgreSQL
-- can be installed on any existing PostgreSQL DB
-- supports SQL natively
-- extends normal SQL with functions to improve working with timeseries data
-- supports all third party tools for PostgreSQL
+> `requirements.txt` currently includes `pylint` and `black` as formatter
 
-### Why preferred
+3. Change the default path in app.py (you can also use the command line to pass the full path)
 
-- Supports all data types (unlike InfluxDB for example)
-- Classic SQL as query language (no new lang to learn)
-- solid storage engine (by postgre)
-- As cardinality of data increases, the performance of Timescale becomes way better than InfluxDB
+4. Run app.py and enjoy!
 
-### Setup
+## TODO
 
-- [TimescaleDB Developer Docs: Getting Started](https://docs.timescale.com/latest/getting-started)
-- setup using docker
-
-```bash
-docker run -d --name timescaledb -p 5432:5432 -e POSTGRES_PASSWORD=password timescale/timescaledb:latest-pg11
-```
-
-- connect to psql (`docker exec -it timescaledb psql -U postgres`)
-- create new database (`CREATE database tutorial;`)
-- connect to db (`\c tutorial` or later `docker exec -it timescaledb psql -U postgres -d tutorial`)
-- enable extension (`CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`)
-
-### Hypertables
-
-- one table from user perspective, many tables under the hood (chunks)
-- partition data into one or multiple dimensions by time, key
-- can be used like standard SQL table
-- standard schema with at least one column specifying a time value (timestamp, int, date ...)
-- creation:
-
-```SQL
-CREATE TABLE (...)
-SELECT create_hypertable('<tablename>, <time-holding column>')
-```
+- implement a config file finder (search different paths as shown in the above definition)
+- create plugins for all formats that should be supported
+- clean up requirements?
