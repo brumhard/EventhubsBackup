@@ -13,7 +13,7 @@ see Prometheus.md
 ## Influx
 
 \+ open source
-\+ supports setting custom timestamps 
+\+ supports setting custom timestamps
 \+ works with concurrency
 \+ good docs
 \- costs for horizontal scaling (InfluxEnterprise)

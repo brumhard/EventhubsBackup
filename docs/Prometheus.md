@@ -1,4 +1,4 @@
-## Prometheus
+# Prometheus
 
 NOT FITTING FOR THE MONITORING SETUP
 
@@ -17,9 +17,11 @@ The Pushgateway seems to be the only way implement the targeted infrastructure w
 -> where should the client be placed?
 
 for online services there should be client side and server side monitoring ([Instrumentation \| Prometheus](https://prometheus.io/docs/practices/instrumentation/#online-serving-systems))
-  - -> server side in the API code
-  - -> on an extry client that checks failed requests request time...
-    - -> no service bus as the client code needs to be implemented where the request is executed
+
+- -> server side in the API code
+
+- -> on an extry client that checks failed requests request time...
+  - -> no service bus as the client code needs to be implemented where the request is executed
 
 [Instrumentation \| Prometheus](https://prometheus.io/docs/practices/instrumentation/#online-serving-systems)
 Server side implementation?
@@ -27,12 +29,11 @@ Server side implementation?
 [Configuration \| Prometheus](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#kubernetes_sd_config)
 For Kubernetes Service discovery?
 
+## infrastructure questions
 
-#### infrastructure questions
 - service foreach host to be monitored?
 - 1 service for all hosts? wheres the limit for service
-
-- file based service discovery? or kubernetes 
+- file based service discovery? or kubernetes ?
 - prometheus and monitoring services in one cluster?
 
-
+-> not applicable to backup architecture
