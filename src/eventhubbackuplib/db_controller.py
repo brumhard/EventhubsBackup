@@ -45,8 +45,8 @@ class DB_Controller:
         Raises:
             ValueError: If data_to_insert contains dicts with different keys.
         """
-        logger.debug(f"{self.__hash__()}: Inserting {len(data_to_insert)} new row/-s into table {table_name}")
-        logger.debug(f"{self.__hash__()}: Inserting into table {table_name}: {data_to_insert}")
+        logger.debug(f"{self.__hash__()}: trying to insert {len(data_to_insert)} new row/-s into table {table_name}")
+        logger.debug(f"{self.__hash__()}: trying to insert into table {table_name}: {data_to_insert}")
 
         # make sure every entry in data_to_insert has same keys
         keys_sets = list(map(lambda x: list(x.keys()), data_to_insert))
@@ -64,5 +64,12 @@ class DB_Controller:
             f"INSERT INTO {table_name} ({column_names}) values ({values_placeholder})"
         )
         self._cur.executemany(sql_insert, values_to_insert)
+
+    def commit(self):
+        logger.info("Commited changes to db")
         self._conn.commit()
+    
+    def rollback(self):
+        logger.info("Rollback on DB. Probably some error happened")
+        self._conn.rollback()
 

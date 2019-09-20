@@ -2,6 +2,8 @@ from .db_controller import DB_Controller
 from .plugins.plugin_loader import Plugin_Loader
 import threading
 import logging
+import queue 
+import psycopg2.errors
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +43,25 @@ class Event_Processing:
         logger.debug(f"{self.__hash__()}: Created processing client")
 
     def __enter__(self):
-        self._db_controller = DB_Controller(self._connection_string)
+        self.db_controller = DB_Controller(self._connection_string)
         self._plugin = Plugin_Loader.load(class_name=self._plugin_name)
 
     def __exit__(self, type, value, traceback):
-        self._db_controller.close()
+        self.db_controller.close()
 
     def process_message(self, message) -> None:
         data = self._plugin.process(message)
-        self._db_controller.insert(self._table_name, [data])
+        self.db_controller.insert(self._table_name, [data])
 
-    def process_event(self, event) -> None:
+    def process_event(self, event, error_queue: queue.Queue) -> None:
         logger.debug(
             f"{self.__hash__()}: Processing event with sn {event.sequence_number} and offset {event.offset}"
         )
-        self.process_message(event.body_as_str())
+        try:
+            self.process_message(event.body_as_str())
+        except psycopg2.errors.InFailedSqlTransaction:
+            logger.debug("Failed processing event because of earlier error")
+            
+        except Exception as e:
+            logger.exception(e)
+            error_queue.put(e)
